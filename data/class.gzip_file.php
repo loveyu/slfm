@@ -1,19 +1,14 @@
 <?php
 
-/**
- * User: loveyu
- * Date: 2015/1/4
- * Time: 23:45
- */
-class gzip_file extends tar_file{
-	function gzip_file($name){
-		$this->tar_file($name);
+class Gzip_file extends Tar_file{
+	function __construct($name){
+		parent::__construct($name);
 		$this->options['type'] = "gzip";
 	}
 
 	function create_gzip(){
 		if($this->options['inmemory'] == 0){
-			$Pwd = getcwd();
+			$pwd = getcwd();
 			chdir($this->options['basedir']);
 			if($fp = gzopen($this->options['name'], "wb{$this->options['level']}")){
 				fseek($this->archive, 0);
@@ -21,10 +16,10 @@ class gzip_file extends tar_file{
 					gzwrite($fp, $temp);
 				}
 				gzclose($fp);
-				chdir($Pwd);
+				chdir($pwd);
 			} else{
 				$this->error[] = "Could not open {$this->options['name']} for writing.";
-				chdir($Pwd);
+				chdir($pwd);
 				return 0;
 			}
 		} else{

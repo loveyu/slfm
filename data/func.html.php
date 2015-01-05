@@ -428,9 +428,8 @@ function view(){
 					fclose($fh);
 					$ext = pathinfo($file, PATHINFO_EXTENSION);
 					$ctype = get_mime_type($ext);
-					$content = file_get_contents($sys_file);
-					if($ctype == "application/octet-stream"){
-						$ctype = "text/plain";
+					if($ctype != "application/octet-stream"){
+						$ctype = "text/plain; charset=" . get_string_encoding(file_get_contents($sys_file));
 					}
 					header("Pragma: public");
 					header("Expires: 0");
@@ -438,7 +437,7 @@ function view(){
 					header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 					header("Cache-Control: public");
 					header("Content-Description: File Transfer");
-					header("Content-Type: " . $ctype . "; charset=" . get_string_encoding($content));
+					header("Content-Type: " . $ctype );
 					header("Content-Disposition: inline; filename=\"" . pathinfo($file, PATHINFO_BASENAME) . "\";");
 					header("Content-Transfer-Encoding: binary");
 					header("Content-Length: " . filesize($sys_file));

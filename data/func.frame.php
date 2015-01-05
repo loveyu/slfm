@@ -82,7 +82,7 @@ function frame3(){
 							reloadframe("parent", 2);
 						}
 					}
-				}else{
+				} else{
 					alert("必须切换到对应目录才运行删除！");
 				}
 				break;
@@ -152,17 +152,21 @@ function frame3(){
 					ini_set("display_errors", 0);
 					ini_set("max_execution_time", 0);
 					$zipfile = false;
-					$cmd_arg = nameToSys($cmd_arg);
 					if(strstr($cmd_arg, ".tar")){
-						$zipfile = new tar_file($cmd_arg);
+						$zipfile = new Tar_file(nameToSys($cmd_arg));
 					} elseif(strstr($cmd_arg, ".zip")){
-						$zipfile = new zip_file($cmd_arg);
+						$zipfile = new Zip_file(nameToSys($cmd_arg));
 					} elseif(strstr($cmd_arg, ".bzip")){
-						$zipfile = new bzip_file($cmd_arg);
+						$zipfile = new Bzip_file(nameToSys($cmd_arg));
 					} elseif(strstr($cmd_arg, ".gzip")){
-						$zipfile = new gzip_file($cmd_arg);
+						$zipfile = new Gzip_file(nameToSys($cmd_arg));
 					}
 					if($zipfile){
+						$msg = $zipfile->test();
+						if($msg !== true){
+							echo msg_out($msg, "#f55");
+							break;
+						}
 						$zipfile->set_options(array(
 							'basedir' => nameToSys($current_dir),
 							'overwrite' => 1,
@@ -197,20 +201,20 @@ function frame3(){
 				break;
 			case 72: // decompress arq
 				if(strlen($cmd_arg)){
-					if(file_exists($current_dir . $cmd_arg)){
+					if(file_exists(nameToSys($current_dir . $cmd_arg))){
 						$zipfile = false;
 						if(strstr($cmd_arg, ".zip")){
 							zip_extract();
 						} elseif(strstr($cmd_arg, ".bzip") || strstr($cmd_arg, ".bz2") || strstr($cmd_arg, ".tbz2") || strstr($cmd_arg, ".bz") || strstr($cmd_arg, ".tbz")){
-							$zipfile = new bzip_file($cmd_arg);
+							$zipfile = new Bzip_file(nameToSys($cmd_arg));
 						} elseif(strstr($cmd_arg, ".gzip") || strstr($cmd_arg, ".gz") || strstr($cmd_arg, ".tgz")){
-							$zipfile = new gzip_file($cmd_arg);
+							$zipfile = new Gzip_file(nameToSys($cmd_arg));
 						} elseif(strstr($cmd_arg, ".tar")){
-							$zipfile = new tar_file($cmd_arg);
+							$zipfile = new Tar_file(nameToSys($cmd_arg));
 						}
 						if($zipfile){
 							$zipfile->set_options(array(
-								'basedir' => $current_dir,
+								'basedir' => nameToSys($current_dir),
 								'overwrite' => 1
 							));
 							$zipfile->extract_files();

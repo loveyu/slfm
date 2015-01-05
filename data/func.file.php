@@ -92,10 +92,10 @@ function total_move($orig, $dest){
  * 文件的下载
  */
 function download(){
-	/**
-	 * @var array $download_ext_filter 为全局变量
-	 */
-	global $current_dir, $filename;
+	global $download_ext_filter, $current_dir, $filename;
+	if(!isset($download_ext_filter) || !is_array($download_ext_filter)){
+		$download_ext_filter = array();
+	}
 	$file = $current_dir . $filename;
 	$sys_file = nameToSys($file);
 	if(file_exists($sys_file)){
@@ -108,15 +108,23 @@ function download(){
 		}
 		if(!$is_denied){
 			$size = filesize($sys_file);
-			header("Content-Type: application/save");
+			header("Content-Type: application/force-download;");
 			header("Content-Length: $size");
 			header("Content-Disposition: attachment; filename=\"$filename\"");
 			header("Content-Transfer-Encoding: binary");
-			if($fh = fopen($sys_file, "rb")){
-				fpassthru($fh);
-				fclose($fh);
-			} else{
-				alert(et('ReadDenied') . ": " . $file);
+			header("Content-Length: " . $size);
+			flush();
+			if($_SERVER['REQUEST_METHOD'] != "HEAD"){
+				$fp = fopen($sys_file, "r");
+				if($fp){
+					while(!feof($fp)){
+						echo fread($fp, 65536);
+						flush();
+					}
+					fclose($fp);
+				} else{
+					alert(et('ReadDenied') . ": " . $file);
+				}
 			}
 		} else{
 			alert(et('ReadDenied') . ": " . $file);
@@ -220,36 +228,15 @@ function save_upload($temp_file, $filename, $dir_dest){
  */
 function zip_extract(){
 	global $cmd_arg, $current_dir, $islinux;
-	$zip = zip_open($current_dir . $cmd_arg);
-	if($zip){
-		while($zip_entry = zip_read($zip)){
-			if(zip_entry_filesize($zip_entry)){
-				//TODO 修正PATH值
-				$path = "";
-				$complete_path = $path . dirname(zip_entry_name($zip_entry));
-				$complete_name = $path . zip_entry_name($zip_entry);
-				if(!file_exists($complete_path)){
-					$tmp = '';
-					foreach(explode('/', $complete_path) AS $k){
-						$tmp .= $k . '/';
-						if(!file_exists($tmp)){
-							@mkdir($current_dir . $tmp, 0755);
-						}
-					}
-				}
-				if(zip_entry_open($zip, $zip_entry, "r")){
-					if($fd = fopen($current_dir . $complete_name, 'w')){
-						fwrite($fd, zip_entry_read($zip_entry, zip_entry_filesize($zip_entry)));
-						fclose($fd);
-					} else{
-						echo "fopen($current_dir.$complete_name) error<br>";
-					}
-					zip_entry_close($zip_entry);
-				} else{
-					echo "zip_entry_open($zip,$zip_entry) error<br>";
-				}
-			}
-		}
-		zip_close($zip);
+	$zip = new ZipArchive();
+	if($zip->open(nameToSys($current_dir . $cmd_arg)) !== true){
+		echo msg_out("Open zip file error." . $current_dir . $cmd_arg, "#f00");
+		return;
+	}
+	if($zip->extractTo(nameToSys($current_dir)) !== true){
+		$zip->close();
+		echo msg_out("Extract Zip file error.", "#f00");
+	} else{
+		$zip->close();
 	}
 }

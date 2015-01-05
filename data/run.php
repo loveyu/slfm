@@ -76,14 +76,17 @@ switch($error_reporting){
 	case 0:
 		error_reporting(0);
 		@ini_set("display_errors", 0);
+		@ini_set('display_errors', 'off');
 		break;
 	case 1:
 		error_reporting(E_ERROR | E_PARSE | E_COMPILE_ERROR);
 		@ini_set("display_errors", 1);
+		@ini_set('display_errors', 'on');
 		break;
 	case 2:
 		error_reporting(E_ALL | E_STRICT);
 		@ini_set("display_errors", 1);
+		@ini_set('display_errors', 'on');
 		break;
 }
 if(!isset($current_dir)){

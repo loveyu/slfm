@@ -1,29 +1,38 @@
 <?php
-/**
- * User: loveyu
- * Date: 2015/1/4
- * Time: 23:46
- */
-class bzip_file extends tar_file{
-	function bzip_file($name){
-		$this->tar_file($name);
+
+class Bzip_file extends Tar_file{
+	function __construct($name){
+		parent::__construct($name);
 		$this->options['type'] = "bzip";
+	}
+
+	function test(){
+		$flag = parent::test();
+		if($flag!==true){
+			return $flag;
+		}
+		if(function_exists('bzopen')){
+			return true;
+		}else{
+			return "Bzip compress is not support.";
+		}
 	}
 
 	function create_bzip(){
 		if($this->options['inmemory'] == 0){
-			$Pwd = getcwd();
+			$pwd = getcwd();
 			chdir($this->options['basedir']);
-			if($fp = bzopen($this->options['name'], "wb")){
+			$fp = bzopen($this->options['name'], "w");
+			if($fp){
 				fseek($this->archive, 0);
 				while($temp = fread($this->archive, 1048576)){
 					bzwrite($fp, $temp);
 				}
 				bzclose($fp);
-				chdir($Pwd);
+				chdir($pwd);
 			} else{
 				$this->error[] = "Could not open {$this->options['name']} for writing.";
-				chdir($Pwd);
+				chdir($pwd);
 				return 0;
 			}
 		} else{

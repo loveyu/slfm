@@ -91,6 +91,33 @@ function nameToPage($name){
 }
 
 /**
+ * 错误消息输出
+ * @param              $msg
+ * @param string       $color
+ * @param array|string $tag
+ * @return string
+ */
+function msg_out($msg, $color = '#000', $tag = array()){
+	if(!is_array($tag)){
+		if(is_string($tag)){
+			$tag = array($tag);
+		} else{
+			$tag = array();
+		}
+	}
+	$rt = "<p style='color: " . $color . ";'>";
+	foreach($tag as $v){
+		$rt .= "<$v>";
+	}
+	$rt .= $msg;
+	foreach($tag as $v){
+		$rt .= "</$v>";
+	}
+	$rt .= "</p>";
+	return $rt;
+}
+
+/**
  * 获取服务器地址
  * @return string
  */
