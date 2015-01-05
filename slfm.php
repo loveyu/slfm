@@ -3,7 +3,6 @@
 //首行为配置文件，请勿修改
 
 
-
 /*-- 文件: copyright.txt ---*/
 /*--------------------------------------------------
  | PHP FILE MANAGER
@@ -48,10 +47,7 @@
 */
 
 
-
 /*-- 文件: data/class.config.php ---*/
-
-
 /**
  * 配置类
  * Class config
@@ -80,7 +76,7 @@ class config{
 			'error_reporting' => 2,//错误提示等级
 			'fm_root' => '',//文件管理根目录
 			'cookie_cache_time' => 60 * 60 * 24 * 30,//登陆有效期
-			'version' => '0.10'//程序版本
+			'version' => '0.10.0'//程序版本
 		);
 		$data = false;
 		$this->filename = $fm_self;
@@ -126,10 +122,7 @@ class config{
 }
 
 
-
 /*-- 文件: data/class.archive.php ---*/
-
-
 class Archive{
 	function __construct($name){
 		$this->options = array(
@@ -441,10 +434,7 @@ class Archive{
 }
 
 
-
-
 /*-- 文件: data/func.sys.php ---*/
-
 /**
  * User: loveyu
  * Date: 2015/1/4
@@ -640,9 +630,7 @@ function convert_page_encode($string){
 }
 
 
-
 /*-- 文件: data/func.file.php ---*/
-
 /**
  * 文件相关函数
  * User: loveyu
@@ -886,9 +874,7 @@ function zip_extract(){
 }
 
 
-
 /*-- 文件: data/func.data.php ---*/
-
 /**
  * 数据转换函数
  * User: loveyu
@@ -1285,9 +1271,7 @@ function get_mime_type($ext = ''){
 }
 
 
-
 /*-- 文件: data/func.et.php ---*/
-
 /**
  * 国际化语言设置
  * @param $tag
@@ -1407,8 +1391,10 @@ function et($tag){
 	$en['Disabled Errors'] = "Disable";
 	$en['Show Errors'] = "Show Errors";
 	$en['Show All Errors'] = "Show All Errors";
+	$en['UpdateResult'] = "Update Result";
 
 	//中文语言设置
+	$en['UpdateResult'] = "更新结果";
 	$zh['Version'] = '版本';
 	$zh['DocRoot'] = '文档根目录';
 	$zh['FLRoot'] = '文件管理根目录';
@@ -3373,9 +3359,7 @@ function et($tag){
 }
 
 
-
 /*-- 文件: data/func.html.php ---*/
-
 /**
  * HTML接口
  * User: loveyu
@@ -3949,9 +3933,7 @@ function copyright_info(){
 }
 
 
-
 /*-- 文件: data/func.session.php ---*/
-
 /**
  * User: loveyu
  * Date: 2015/1/5
@@ -4033,9 +4015,7 @@ function login_form(){
 }
 
 
-
 /*-- 文件: data/func.frame.php ---*/
-
 /**
  * User: loveyu
  * Date: 2015/1/5
@@ -4353,9 +4333,7 @@ function frameset(){
 }
 
 
-
 /*-- 文件: data/func.form.php ---*/
-
 /**
  * User: loveyu
  * Date: 2015/1/5
@@ -5453,21 +5431,85 @@ table{width: 100%}
 }
 
 /**
+ * 控制台表单
+ */
+function shell_form(){
+	global $current_dir, $shell_form, $cmd_arg, $path_info;
+	$data_out = "";
+	if(strlen($cmd_arg)){
+		exec($cmd_arg, $mat);
+		if(count($mat)){
+			$data_out = trim(implode("\n", $mat));
+		}
+	}
+	switch($shell_form){
+		case 1:
+			html_header();
+			echo "
+            <body>
+            <style>*{margin: 0;padding: 0}</style>
+            <form name=\"data_form\">
+            <textarea name=data_out rows=36 READONLY=\"1\" style='width:99%;margin: 10px auto'></textarea>
+            </form>
+            </body></html>";
+			break;
+		case 2:
+			html_header();
+			echo "
+            <body marginwidth=\"0\" marginheight=\"0\">
+            <form name=\"shell_form\" action=\"" . $path_info["basename"] . "\" method=\"post\" style=\"width:70%;margin: 10px auto\">
+            <input type=hidden name=current_dir value=\"$current_dir\">
+            <input type=hidden name=action value=\"9\">
+            <input type=hidden name=shell_form value=\"2\">
+            <input type=text name=cmd_arg style=\"width:100%\">
+            </form>";
+			echo "<script language=\"Javascript\" type=\"text/javascript\">";
+			if(strlen($data_out)){
+				echo "
+				var val = '# " . html_encode($cmd_arg) . "\\n" . html_encode(str_replace("<", "[", str_replace(">", "]", str_replace("\n", "\\n", str_replace("'", "\'", str_replace("\\", "\\\\", $data_out)))))) . "\\n';
+                parent.frame1.document.data_form.data_out.value += val;
+				parent.frame1.document.data_form.data_out.scrollTop = parent.frame1.document.data_form.data_out.scrollHeight;";
+			}
+			echo "
+                document.shell_form.cmd_arg.focus();
+            </script>
+            ";
+			echo "
+            </body></html>";
+			break;
+		default:
+			html_header("
+            <script language=\"Javascript\" type=\"text/javascript\">
+                window.moveTo((window.screen.width-800)/2,((window.screen.height-600)/2)-20);
+            </script>");
+			echo "
+            <frameset rows=\"90%,10%\" framespacing=\"0\" frameborder=no>
+                <frame src=\"" . $path_info["basename"] . "?action=9&shell_form=1\" name=frame1 border=\"0\" marginwidth=\"0\" marginheight=\"0\">
+                <frame src=\"" . $path_info["basename"] . "?action=9&shell_form=2\" name=frame2 border=\"0\" marginwidth=\"0\" marginheight=\"0\">
+            </frameset>
+            </html>";
+	}
+}
+
+
+/*-- 文件: data/func.form.config.php ---*/
+/**
  * 配置表单
  */
 function config_form(){
 	global $cfg;
 	global $current_dir, $fm_self, $doc_root, $path_info, $fm_current_root, $lang, $error_reporting, $version;
 	global $config_action, $newpass, $newlang, $newerror, $newfm_root;
-	$Warning = "";
 	$data = array();
-	$ChkVerWarning = "";
 	$Warning1 = "";
 	$Warning2 = "";
 	switch($config_action){
 		case 1:
-			$ChkVerWarning = "";
-			//TODO 检测更新
+			$update_msg = file_get_contents("http://www.loveyu.net/Update/slfm.php?version=".$version);
+			$update_msg = json_decode($update_msg,true);
+			if(!is_array($update_msg) || !isset($update_msg['top_version'])){
+				unset($update_msg);
+			}
 			break;
 		case 2:
 			$reload = false;
@@ -5519,8 +5561,13 @@ function config_form(){
     <tr><td align=right width=\"1%\">" . et('Version') . ":<td>$version (" . get_size($fm_self) . ")</td></tr>
     <tr><td align=right>" . et('Website') . ":<td><a href=\"JavaScript:open_win('http://www.loveyu.net/slfm')\">http://www.loveyu.net/slfm</a>&nbsp;&nbsp;&nbsp;<input type=button value=\"" . et('ChkVer') . "\" onclick=\"test_config_form(1)\"></td></tr>
 	</form>";
-	if(strlen($ChkVerWarning)){
-		echo $ChkVerWarning . $data['warnings'];
+	if(isset($update_msg)){
+		$flag = version_compare($version,$update_msg['top_version'],"<");
+		if($flag){
+			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td style=\"color: #f51\"><strong>(".$update_msg['top_version'].")</strong>,<a href=\"".$update_msg['top_download']."\">".et("ChkVerAvailable")."</a></a></a></td></tr>";
+		}else{
+			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td>".et("ChkVerNotAvailable")."</td></tr>";
+		}
 	}
 	echo "
 	</td></tr>
@@ -5597,71 +5644,8 @@ function config_form(){
 	echo "</body>\n</html>";
 }
 
-/**
- *
- */
-function shell_form(){
-	global $current_dir, $shell_form, $cmd_arg, $path_info;
-	$data_out = "";
-	if(strlen($cmd_arg)){
-		exec($cmd_arg, $mat);
-		if(count($mat)){
-			$data_out = trim(implode("\n", $mat));
-		}
-	}
-	switch($shell_form){
-		case 1:
-			html_header();
-			echo "
-            <body>
-            <style>*{margin: 0;padding: 0}</style>
-            <form name=\"data_form\">
-            <textarea name=data_out rows=36 READONLY=\"1\" style='width:99%;margin: 10px auto'></textarea>
-            </form>
-            </body></html>";
-			break;
-		case 2:
-			html_header();
-			echo "
-            <body marginwidth=\"0\" marginheight=\"0\">
-            <form name=\"shell_form\" action=\"" . $path_info["basename"] . "\" method=\"post\" style=\"width:70%;margin: 10px auto\">
-            <input type=hidden name=current_dir value=\"$current_dir\">
-            <input type=hidden name=action value=\"9\">
-            <input type=hidden name=shell_form value=\"2\">
-            <input type=text name=cmd_arg style=\"width:100%\">
-            </form>";
-			echo "<script language=\"Javascript\" type=\"text/javascript\">";
-			if(strlen($data_out)){
-				echo "
-				var val = '# " . html_encode($cmd_arg) . "\\n" . html_encode(str_replace("<", "[", str_replace(">", "]", str_replace("\n", "\\n", str_replace("'", "\'", str_replace("\\", "\\\\", $data_out)))))) . "\\n';
-                parent.frame1.document.data_form.data_out.value += val;
-				parent.frame1.document.data_form.data_out.scrollTop = parent.frame1.document.data_form.data_out.scrollHeight;";
-			}
-			echo "
-                document.shell_form.cmd_arg.focus();
-            </script>
-            ";
-			echo "
-            </body></html>";
-			break;
-		default:
-			html_header("
-            <script language=\"Javascript\" type=\"text/javascript\">
-                window.moveTo((window.screen.width-800)/2,((window.screen.height-600)/2)-20);
-            </script>");
-			echo "
-            <frameset rows=\"90%,10%\" framespacing=\"0\" frameborder=no>
-                <frame src=\"" . $path_info["basename"] . "?action=9&shell_form=1\" name=frame1 border=\"0\" marginwidth=\"0\" marginheight=\"0\">
-                <frame src=\"" . $path_info["basename"] . "?action=9&shell_form=2\" name=frame2 border=\"0\" marginwidth=\"0\" marginheight=\"0\">
-            </frameset>
-            </html>";
-	}
-}
-
-
 
 /*-- 文件: data/global.php ---*/
-
 /**
  * User: loveyu
  * Date: 2015/1/4
@@ -5701,9 +5685,7 @@ if(@get_magic_quotes_gpc()){
 }
 
 
-
 /*-- 文件: data/run.php ---*/
-
 /**
  * User: loveyu
  * Date: 2015/1/4
