@@ -152,6 +152,7 @@ function frame3(){
 					ini_set("display_errors", 0);
 					ini_set("max_execution_time", 0);
 					$zipfile = false;
+					$cmd_arg = nameToSys($cmd_arg);
 					if(strstr($cmd_arg, ".tar")){
 						$zipfile = new tar_file($cmd_arg);
 					} elseif(strstr($cmd_arg, ".zip")){
@@ -163,7 +164,7 @@ function frame3(){
 					}
 					if($zipfile){
 						$zipfile->set_options(array(
-							'basedir' => $current_dir,
+							'basedir' => nameToSys($current_dir),
 							'overwrite' => 1,
 							'level' => 3
 						));
@@ -173,7 +174,7 @@ function frame3(){
 								for($x = 0; $x < count($selected_file_list); $x++){
 									$selected_file_list[$x] = trim($selected_file_list[$x]);
 									if(strlen($selected_file_list[$x])){
-										$zipfile->add_files($selected_file_list[$x]);
+										$zipfile->add_files(nameToSys($selected_file_list[$x]));
 									}
 								}
 							}
@@ -184,7 +185,7 @@ function frame3(){
 								for($x = 0; $x < count($selected_dir_list); $x++){
 									$selected_dir_list[$x] = trim($selected_dir_list[$x]);
 									if(strlen($selected_dir_list[$x])){
-										$zipfile->add_files($selected_dir_list[$x]);
+										$zipfile->add_files(nameToSys($selected_dir_list[$x]));
 									}
 								}
 							}

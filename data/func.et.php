@@ -115,6 +115,9 @@ function et($tag){
 	$en['RenderTime'] = 'Time to render this page';
 	$en['Seconds'] = 'sec';
 	$en['ErrorReport'] = 'Error Reporting';
+	$en['Disabled Errors'] = "Disable";
+	$en['Show Errors'] = "Show Errors";
+	$en['Show All Errors'] = "Show All Errors";
 
 	//中文语言设置
 	$zh['Version'] = '版本';
@@ -224,6 +227,9 @@ function et($tag){
 	$zh['RenderTime'] = '页面加载时间';
 	$zh['Seconds'] = '秒';
 	$zh['ErrorReport'] = '错误报告';
+	$zh['Disabled Errors'] = "禁用错误输出";
+	$zh['Show Errors'] = "仅显示出错信息";
+	$zh['Show All Errors'] = "显示所有错误、警告提示";
 
 	// Portuguese by - Fabricio Seger Kolling
 	$pt['Version'] = 'Versão';
@@ -2074,5 +2080,5 @@ function et($tag){
 		return html_encode($lang_[$tag]);
 	}
 	//else return "[$tag]"; // So we can know what is missing
-	return $en[$tag];
+	return isset($en[$tag])?$en[$tag]:$tag;
 }

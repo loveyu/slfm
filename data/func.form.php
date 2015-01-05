@@ -40,7 +40,7 @@ function dir_list_form(){
 					$has_files = true;
 				} elseif(is_dir($current_sys_dir . $file)){
 					// Recursive directory size disabled
-					// $entry_list[$entry_count]["size"] = total_size($current_dir.$file);
+					// $entry_list[$entry_count]["size"] = total_size($current_sys_dir.$file);
 					$entry_list[$entry_count]["size"] = 0;
 					$entry_list[$entry_count]["sizet"] = "&nbsp;";
 					$entry_list[$entry_count]["type"] = "dir";
@@ -368,8 +368,8 @@ function dir_list_form(){
             window.open('" . addslashes($path_info["basename"]) . "?action=7&current_dir=" . addslashes($current_dir) . "&filename='+encodeURIComponent(arg), '', 'width='+w+',height='+h+',fullscreen=no,scrollbars=no,resizable=yes,status=no,toolbar=no,menubar=no,location=no');
         }
         function config(){
-            var w = 650;
-            var h = 400;
+            var w = 800;
+            var h = 500;
             window.open('" . addslashes($path_info["basename"]) . "?action=2', 'win_config', 'width='+w+',height='+h+',fullscreen=no,scrollbars=yes,resizable=yes,status=no,toolbar=no,menubar=no,location=no');
         }
         function server_info(arg){
@@ -410,7 +410,10 @@ function dir_list_form(){
             }
         }
 		function set_sel_dir_warn(b){
-        	document.getElementById(\"sel_dir_warn\").style.display=(b?'':'none');
+        	var obj = document.getElementById(\"sel_dir_warn\");
+        	if(obj){
+        		obj.style.display=(b?'':'none');
+        	}
 		}
 		function cancel_copy_move(){
            	set_sel_dir_warn(false);
@@ -518,7 +521,6 @@ function dir_list_form(){
                 document.form_action.submit();
             }
         }
-        //-->
         </script>";
 		if(!isset($dir_before)){
 			$dir_before = NULL;
@@ -587,6 +589,8 @@ function dir_list_form(){
 			foreach($entry_list as $ind => $dir_entry){
 				$file = $dir_entry["name"];
 				$display = $dir_entry['display_name'];
+				$is_test_writable = is_writable($current_sys_dir . $file);
+				$is_test_readable = is_readable($current_sys_dir . $file);
 				if($dir_entry["type"] == "dir"){
 					$dir_out[$dir_count] = array();
 					$dir_out[$dir_count][] = "
@@ -603,11 +607,11 @@ function dir_list_form(){
 						$dir_out[$dir_count][] = "<td>&nbsp;</td>";
 					}
 					// Opções de diretório
-					if(is_writable($current_dir . $file)){
+					if($is_test_writable){
 						$dir_out[$dir_count][] = "
                         <td align=center><a href=\"JavaScript:if(confirm('" . et('ConfRem') . " \\'" . addslashes($display) . "\\' ?')) document.location.href='" . addslashes($path_info["basename"]) . "?frame=3&action=8&cmd_arg=" . addslashes($display) . "&current_dir=" . addslashes($current_dir) . "'\">" . et('Rem') . "</a>";
 					}
-					if(is_writable($current_dir . $file)){
+					if($is_test_writable){
 						$dir_out[$dir_count][] = "
                         <td align=center><a href=\"JavaScript:rename('" . addslashes($display) . "')\">" . et('Ren') . "</a>";
 					}
@@ -631,37 +635,37 @@ function dir_list_form(){
 					if(!isset($dir_entry["ext"])){
 						$dir_entry["ext"] = "";
 					}
-					if(is_writable($current_dir . $file)){
+					if($is_test_writable){
 						$file_out[$file_count][] = "
                                 <td align=center><a href=\"javascript:if(confirm('" . uppercase(et('Rem')) . " \\'" . addslashes($display) . "\\' ?')) document.location.href='" . addslashes($path_info["basename"]) . "?frame=3&action=8&cmd_arg=" . addslashes($display) . "&current_dir=" . addslashes($current_dir) . "'\">" . et('Rem') . "</a>";
 					} else{
 						$file_out[$file_count][] = "<td>&nbsp;</td>";
 					}
-					if(is_writable($current_dir . $file)){
+					if($is_test_writable){
 						$file_out[$file_count][] = "
                                 <td align=center><a href=\"javascript:rename('" . addslashes($display) . "')\">" . et('Ren') . "</a>";
 					} else{
 						$file_out[$file_count][] = "<td>&nbsp;</td>";
 					}
-					if(is_readable($current_dir . $file) && (strpos(".wav#.mp3#.mid#.avi#.mov#.mpeg#.mpg#.rm#.iso#.bin#.img#.dll#.psd#.fla#.swf#.class#.ppt#.tif#.tiff#.pcx#.jpg#.gif#.png#.wmf#.eps#.bmp#.msi#.exe#.com#.rar#.tar#.zip#.bz2#.tbz2#.bz#.tbz#.bzip#.gzip#.gz#.tgz#", $dir_entry["ext"] . "#") === false)){
+					if($is_test_readable && (strpos(".wav#.mp3#.mid#.avi#.mov#.mpeg#.mpg#.rm#.iso#.bin#.img#.dll#.psd#.fla#.swf#.class#.ppt#.tif#.tiff#.pcx#.jpg#.gif#.png#.wmf#.eps#.bmp#.msi#.exe#.com#.rar#.tar#.zip#.bz2#.tbz2#.bz#.tbz#.bzip#.gzip#.gz#.tgz#", $dir_entry["ext"] . "#") === false)){
 						$file_out[$file_count][] = "
                                 <td align=center><a href=\"javascript:edit_file('" . addslashes($display) . "')\">" . et('Edit') . "</a>";
 					} else{
 						$file_out[$file_count][] = "<td>&nbsp;</td>";
 					}
-					if(is_readable($current_dir . $file) && (strpos(".txt#.sys#.bat#.ini#.conf#.swf#.php#.php3#.asp#.html#.htm#.jpg#.gif#.png#.bmp#", $dir_entry["ext"] . "#") !== false)){
+					if($is_test_readable && (strpos(".txt#.sys#.bat#.ini#.conf#.swf#.php#.php3#.asp#.html#.htm#.jpg#.gif#.png#.bmp#", $dir_entry["ext"] . "#") !== false)){
 						$file_out[$file_count][] = "
                                 <td align=center><a href=\"javascript:view('" . addslashes($display) . "');\">" . et('View') . "</a>";
 					} else{
 						$file_out[$file_count][] = "<td>&nbsp;</td>";
 					}
-					if(is_readable($current_dir . $file) && strlen($dir_entry["ext"]) && (strpos(".tar#.zip#.bz2#.tbz2#.bz#.tbz#.bzip#.gzip#.gz#.tgz#", $dir_entry["ext"] . "#") !== false)){
+					if($is_test_readable && strlen($dir_entry["ext"]) && (strpos(".tar#.zip#.bz2#.tbz2#.bz#.tbz#.bzip#.gzip#.gz#.tgz#", $dir_entry["ext"] . "#") !== false)){
 						$file_out[$file_count][] = "
                                 <td align=center><a href=\"javascript:decompress('" . addslashes($display) . "')\">" . et('Decompress') . "</a>";
 					} else{
 						$file_out[$file_count][] = "<td>&nbsp;</td>";
 					}
-					if(is_readable($current_dir . $file) && strlen($dir_entry["ext"]) && (strpos(".exe#.com#.sh#.bat#", $dir_entry["ext"] . "#") !== false)){
+					if($is_test_readable && strlen($dir_entry["ext"]) && (strpos(".exe#.com#.sh#.bat#", $dir_entry["ext"] . "#") !== false)){
 						$file_out[$file_count][] = "
                                 <td align=center><a href=\"javascript:execute_file('" . addslashes($display) . "')\">" . et('Exec') . "</a>";
 					} else{
@@ -762,9 +766,7 @@ function dir_list_form(){
                 <tr><td bgcolor=\"#DDDDDD\" colspan=50><b>" . et('RenderTime') . ": " . substr($tt, 0, strrpos($tt, ".") + 5) . " " . et('Seconds') . "</td></tr>";
 			$out .= "
             <script language=\"Javascript\" type=\"text/javascript\">
-            <!--
                 update_sel_status();
-            //-->
             </script>";
 		} else{
 			$out .= "
@@ -1046,9 +1048,14 @@ function edit_file_form(){
 		fputs($fh, $file_data, strlen($file_data));
 		fclose($fh);
 	}
-	$fh = fopen($sys_file, "r");
-	$file_data = fread($fh, filesize($sys_file));
-	fclose($fh);
+	$l = filesize($sys_file);
+	if($l){
+		$fh = fopen($sys_file, "r");
+		$file_data = fread($fh, $l);
+		fclose($fh);
+	} else{
+		$file_data = "";
+	}
 	html_header();
 	echo "
 <style>
@@ -1088,39 +1095,21 @@ table{width: 100%}
 }
 
 /**
- *
+ * 配置表单
  */
 function config_form(){
 	global $cfg;
 	global $current_dir, $fm_self, $doc_root, $path_info, $fm_current_root, $lang, $error_reporting, $version;
 	global $config_action, $newpass, $newlang, $newerror, $newfm_root;
 	$Warning = "";
+	$data = array();
+	$ChkVerWarning = "";
+	$Warning1 = "";
+	$Warning2 = "";
 	switch($config_action){
 		case 1:
 			$ChkVerWarning = "";
-			if($fh = fopen("http://phpfm.sf.net/latest.php", "r")){
-				$data = "";
-				while(!feof($fh)){
-					$data .= fread($fh, 1024);
-				}
-				fclose($fh);
-				$data = unserialize($data);
-				$ChkVerWarning = "<tr><td align=right> ";
-				if(is_array($data) && count($data)){
-					$ChkVerWarning .= "<a href=\"JavaScript:open_win('http://sourceforge.net')\">
-                    <img src=\"http://sourceforge.net/sflogo.php?group_id=114392&type=1\" width=\"88\" height=\"31\" style=\"border: 1px solid #AAAAAA\" alt=\"SourceForge.net Logo\" />
-					</a>";
-					if(str_replace(".", "", $data['version']) > str_replace(".", "", $cfg->data['version'])){
-						$ChkVerWarning .= "<td><a href=\"JavaScript:open_win('http://prdownloads.sourceforge.net/phpfm/phpFileManager-" . $data['version'] . ".zip?download')\"><font color=green>" . et('ChkVerAvailable') . "</font></a>";
-					} else{
-						$ChkVerWarning .= "<td><font color=red>" . et('ChkVerNotAvailable') . "</font>";
-					}
-				} else{
-					$ChkVerWarning .= "<td><font color=red>" . et('ChkVerError') . "</font>";
-				}
-			} else{
-				$ChkVerWarning .= "<td><font color=red>" . et('ChkVerError') . "</font>";
-			}
+			//TODO 检测更新
 			break;
 		case 2:
 			$reload = false;
@@ -1170,47 +1159,12 @@ function config_form(){
     <table border=0 cellspacing=0 cellpadding=5 align=center width=\"100%\">
 	<form>
     <tr><td align=right width=\"1%\">" . et('Version') . ":<td>$version (" . get_size($fm_self) . ")</td></tr>
-    <tr><td align=right>" . et('Website') . ":<td><a href=\"JavaScript:open_win('http://phpfm.sf.net')\">http://phpfm.sf.net</a>&nbsp;&nbsp;&nbsp;<input type=button value=\"" . et('ChkVer') . "\" onclick=\"test_config_form(1)\"></td></tr>
+    <tr><td align=right>" . et('Website') . ":<td><a href=\"JavaScript:open_win('http://www.loveyu.net/slfm')\">http://www.loveyu.net/slfm</a>&nbsp;&nbsp;&nbsp;<input type=button value=\"" . et('ChkVer') . "\" onclick=\"test_config_form(1)\"></td></tr>
 	</form>";
 	if(strlen($ChkVerWarning)){
 		echo $ChkVerWarning . $data['warnings'];
 	}
 	echo "
- 	<style type=\"text/css\">
-		.buymeabeer {
-		    background: url('http://phpfm.sf.net/img/buymeabeer.png') 0 0 no-repeat;
-		    text-indent: -9999px;
-		    width: 128px;
-		    height: 31px;
-            border: none;
-   			cursor: hand;
-   			cursor: pointer;
-		}
-		.buymeabeer:hover {
-		    background: url('http://phpfm.sf.net/img/buymeabeer.png') 0 -31px no-repeat;
-		}
-	</style>
-	<tr><td align=right>Like this project?</td><td>
-	<form name=\"buymeabeer_form\" action=\"https://www.paypal.com/cgi-bin/webscr\" method=\"post\">
-		<input type=\"hidden\" name=\"cmd\" value=\"_xclick\">
-		<input type=\"hidden\" name=\"business\" value=\"dulldusk@gmail.com\">
-		<input type=\"hidden\" name=\"lc\" value=\"BR\">
-		<input type=\"hidden\" name=\"item_name\" value=\"A Beer\">
-		<input type=\"hidden\" name=\"button_subtype\" value=\"services\">
-		<input type=\"hidden\" name=\"currency_code\" value=\"USD\">
-		<input type=\"hidden\" name=\"tax_rate\" value=\"0.000\">
-		<input type=\"hidden\" name=\"shipping\" value=\"0.00\">
-		<input type=\"hidden\" name=\"bn\" value=\"PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest\">
-        <input type=\"submit\" class=\"buymeabeer\" value=\"buy me a beer\">
-	        <input type=\"hidden\" name=\"buyer_credit_promo_code\" value=\"\">
-	        <input type=\"hidden\" name=\"buyer_credit_product_category\" value=\"\">
-	        <input type=\"hidden\" name=\"buyer_credit_shipping_method\" value=\"\">
-	        <input type=\"hidden\" name=\"buyer_credit_user_address_change\" value=\"\">
-	        <input type=\"hidden\" name=\"tax\" value=\"0\">
-			<input type=\"hidden\" name=\"no_shipping\" value=\"1\">
-	        <input type=\"hidden\" name=\"return\" value=\"http://phpfm.sf.net\">
-	        <input type=\"hidden\" name=\"cancel_return\" value=\"http://phpfm.sf.net\">
-	</form>
 	</td></tr>
     <form name=\"config_form\" action=\"" . $path_info["basename"] . "\" method=\"post\">
     <input type=hidden name=action value=2>
@@ -1219,29 +1173,30 @@ function config_form(){
     <tr><td align=right><nobr>" . et('FLRoot') . ":</nobr><td><input type=text size=60 name=newfm_root value=\"" . $cfg->data['fm_root'] . "\" onkeypress=\"enterSubmit(event,'test_config_form(2)')\"></td></tr>
     <tr><td align=right>" . et('Lang') . ":<td>
 	<select name=newlang>
-    	<option value=cat>Catalan - by Pere Borràs AKA @Norl
-        <option value=nl>Dutch - by Leon Buijs
-		<option value=en>English - by Fabricio Seger Kolling
-		<option value=fr1>French - by Jean Bilwes
-        <option value=fr2>French - by Sharky
-        <option value=fr3>French - by Michel Lainey
-		<option value=de1>German - by Guido Ogrzal
-        <option value=de2>German - by AXL
-        <option value=de3>German - by Mathias Rothe
-        <option value=it1>Italian - by Valerio Capello
-        <option value=it2>Italian - by Federico Corrà
-        <option value=it3>Italian - by Luca Zorzi
-        <option value=it4>Italian - by Gianni
-		<option value=kr>Korean - by Airplanez
-		<option value=pt>Portuguese - by Fabricio Seger Kolling
-		<option value=es>Spanish - by Sh Studios
-        <option value=ru>Russian - by Евгений Рашев
-        <option value=tr>Turkish - by Necdet Yazilimlari
+		<option value=en>English - by Fabricio Seger Kolling</option>
+    	<option value=zh>Chinese - by @loveyu</option>
+    	<option value=cat>Catalan - by Pere Borràs AKA @Norl</option>
+        <option value=nl>Dutch - by Leon Buijs</option>
+		<option value=fr1>French - by Jean Bilwes</option>
+        <option value=fr2>French - by Sharky</option>
+        <option value=fr3>French - by Michel Lainey</option>
+		<option value=de1>German - by Guido Ogrzal</option>
+        <option value=de2>German - by AXL</option>
+        <option value=de3>German - by Mathias Rothe</option>
+        <option value=it1>Italian - by Valerio Capello</option>
+        <option value=it2>Italian - by Federico Corrà</option>
+        <option value=it3>Italian - by Luca Zorzi</option>
+        <option value=it4>Italian - by Gianni</option>
+		<option value=kr>Korean - by Airplanez</option>
+		<option value=pt>Portuguese - by Fabricio Seger Kolling</option>
+		<option value=es>Spanish - by Sh Studios</option>
+        <option value=ru>Russian - by Евгений Рашев</option>
+        <option value=tr>Turkish - by Necdet Yazilimlari</option>
 	</select></td></tr>
     <tr><td align=right>" . et('ErrorReport') . ":<td><select name=newerror>
-	<option value=\"0\">Disabled
-	<option value=\"1\">Show Errors
-	<option value=\"2\">Show Errors, Warnings and Notices
+	<option value=\"0\">" . et("Disabled Errors") . "</option>
+	<option value=\"1\">" . et("Show Errors") . "</option>
+	<option value=\"2\">" . et("Show All Errors") . "</option>
 	</select></td></tr>
     <tr><td> <td><input type=button value=\"" . et('SaveConfig') . "\" onclick=\"test_config_form(2)\">";
 	if(strlen($Warning1)){
@@ -1258,7 +1213,6 @@ function config_form(){
     </form>
     </table>
     <script language=\"Javascript\" type=\"text/javascript\">
-    <!--
         function set_select(sel,val){
             for(var x=0;x<sel.length;x++){
                 if(sel.options[x].value==val){
@@ -1280,7 +1234,6 @@ function config_form(){
         }
         window.moveTo((window.screen.width-600)/2,((window.screen.height-400)/2)-20);
         window.focus();
-    //-->
     </script>
     ";
 	echo "</body>\n</html>";
@@ -1319,18 +1272,15 @@ function shell_form(){
             <input type=hidden name=shell_form value=\"2\">
             <input type=text name=cmd_arg style=\"width:100%\">
             </form>";
-			echo "
-            <script language=\"Javascript\" type=\"text/javascript\">
-            <!--";
+			echo "<script language=\"Javascript\" type=\"text/javascript\">";
 			if(strlen($data_out)){
 				echo "
-                var val = '# " . html_encode($cmd_arg) . "\\n" . html_encode(str_replace("<", "[", str_replace(">", "]", str_replace("\n", "\\n", str_replace("'", "\'", str_replace("\\", "\\\\", $data_out)))))) . "\\n';
+				var val = '# " . html_encode($cmd_arg) . "\\n" . html_encode(str_replace("<", "[", str_replace(">", "]", str_replace("\n", "\\n", str_replace("'", "\'", str_replace("\\", "\\\\", $data_out)))))) . "\\n';
                 parent.frame1.document.data_form.data_out.value += val;
 				parent.frame1.document.data_form.data_out.scrollTop = parent.frame1.document.data_form.data_out.scrollHeight;";
 			}
 			echo "
                 document.shell_form.cmd_arg.focus();
-            //-->
             </script>
             ";
 			echo "
@@ -1339,9 +1289,7 @@ function shell_form(){
 		default:
 			html_header("
             <script language=\"Javascript\" type=\"text/javascript\">
-            <!--
                 window.moveTo((window.screen.width-800)/2,((window.screen.height-600)/2)-20);
-            //-->
             </script>");
 			echo "
             <frameset rows=\"90%,10%\" framespacing=\"0\" frameborder=no>

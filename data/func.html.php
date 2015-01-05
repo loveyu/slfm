@@ -17,7 +17,6 @@ function html_header($header = ""){
     <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />
 	<title>...:::: " . et('FileMan') . "</title>
     <script language=\"Javascript\" type=\"text/javascript\">
-    <!--
         function Is(){
             this.appname = navigator.appName;
             this.appversion = navigator.appVersion;
@@ -89,12 +88,10 @@ function html_header($header = ""){
             return true;
         }
         getFrameSize();
-    //-->
     </script>
     $header
     </head>
     <script language=\"Javascript\" type=\"text/javascript\">
-    <!--
         var W = screen.width;
         var H = screen.height;
         var FONTSIZE = 0;
@@ -169,7 +166,6 @@ function html_header($header = ""){
         ');
     ")));
 	echo "
-    //-->
     </script>
     ";
 }
@@ -183,9 +179,7 @@ function reloadframe($ref, $frame_number, $Plus = ""){
 	global $current_dir, $path_info;
 	echo "
     <script language=\"Javascript\" type=\"text/javascript\">
-    <!--
         " . $ref . ".frame" . $frame_number . ".location.href='" . $path_info["basename"] . "?frame=" . $frame_number . "&current_dir=" . $current_dir . $Plus . "';
-    //-->
     </script>
     ";
 }
@@ -196,9 +190,7 @@ function reloadframe($ref, $frame_number, $Plus = ""){
 function alert($arg){
 	echo "
     <script language=\"Javascript\" type=\"text/javascript\">
-    <!--
         alert('$arg');
-    //-->
     </script>
     ";
 }
@@ -473,11 +465,12 @@ function view(){
 		$is_reachable_thru_webserver = (stristr($current_dir, $doc_root) !== false);
 		if($is_reachable_thru_webserver){
 			$url = $url_info["scheme"] . "://" . $url_info["host"];
-			if(strlen($url_info["port"])){
+			if(isset($url_info["port"]) && strlen($url_info["port"])){
 				$url .= ":" . $url_info["port"];
 			}
 			// Malditas variaveis de sistema!! No windows doc_root é sempre em lowercase... cadê o str_ireplace() ??
 			$url .= str_replace($doc_root, "", "/" . $current_dir) . $filename;
+			$url = preg_replace("/[\\/]{2,}/","/",$url);
 		} else{
 			$url = addslashes($path_info["basename"]) . "?action=4&current_dir=" . addslashes($current_dir) . "&filename=" . addslashes($filename) . "&passthru=1";
 		}

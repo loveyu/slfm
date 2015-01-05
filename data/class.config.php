@@ -21,7 +21,7 @@ class config{
 		global $fm_self;
 		$this->data = array(
 			'lang' => 'zh',
-			'auth_pass' => md5(''),
+			'auth_pass' => md5('123456'),
 			'quota_mb' => 0,
 			'upload_ext_filter' => array(),
 			'download_ext_filter' => array(),

@@ -58,18 +58,18 @@ class archive{
 		}
 		if(!empty($this->options['basedir'])){
 			$this->options['basedir'] = str_replace("\\", "/", $this->options['basedir']);
-			$this->options['basedir'] = preg_replace("/\/+/", "/", $this->options['basedir']);
-			$this->options['basedir'] = preg_replace("/\/$/", "", $this->options['basedir']);
+			$this->options['basedir'] = preg_replace("/\\/+/", "/", $this->options['basedir']);
+			$this->options['basedir'] = preg_replace("/\\/$/", "", $this->options['basedir']);
 		}
 		if(!empty($this->options['name'])){
 			$this->options['name'] = str_replace("\\", "/", $this->options['name']);
-			$this->options['name'] = preg_replace("/\/+/", "/", $this->options['name']);
+			$this->options['name'] = preg_replace("/\\/+/", "/", $this->options['name']);
 		}
 		if(!empty($this->options['prepend'])){
 			$this->options['prepend'] = str_replace("\\", "/", $this->options['prepend']);
-			$this->options['prepend'] = preg_replace("/^(\.*\/+)+/", "", $this->options['prepend']);
-			$this->options['prepend'] = preg_replace("/\/+/", "/", $this->options['prepend']);
-			$this->options['prepend'] = preg_replace("/\/$/", "", $this->options['prepend']) . "/";
+			$this->options['prepend'] = preg_replace("/^(\\.*\\/+)+/", "", $this->options['prepend']);
+			$this->options['prepend'] = preg_replace("/\\/+/", "/", $this->options['prepend']);
+			$this->options['prepend'] = preg_replace("/\\/$/", "", $this->options['prepend']) . "/";
 		}
 	}
 
@@ -203,10 +203,10 @@ class archive{
 
 		foreach($list as $current){
 			$current = str_replace("\\", "/", $current);
-			$current = preg_replace("/\/+/", "/", $current);
-			$current = preg_replace("/\/$/", "", $current);
+			$current = preg_replace("/\\/+/", "/", $current);
+			$current = preg_replace("/\\/$/", "", $current);
 			if(strstr($current, "*")){
-				$regex = preg_replace("/([\\\^\$\.\[\]\|\(\)\?\+\{\}\/])/", "\\\\\\1", $current);
+				$regex = preg_replace("/([\\\\^\$\\.\\[\\]\\|\\(\\)\\?\\+\\{\\}\\/])/", "\\\\\\1", $current);
 				$regex = str_replace("*", ".*", $regex);
 				$dir = strstr($current, "/") ? substr($current, 0, strrpos($current, "/")) : ".";
 				$temp = $this->parse_dir($dir);
@@ -225,7 +225,7 @@ class archive{
 			} else if(@file_exists($current)){
 				$files[] = array(
 					'name' => $current,
-					'name2' => $this->options['prepend'] . preg_replace("/(\.+\/+)+/", "", ($this->options['storepaths'] == 0 && strstr($current, "/")) ? substr($current, strrpos($current, "/") + 1) : $current),
+					'name2' => $this->options['prepend'] . preg_replace("/(\\.+\\/+)+/", "", ($this->options['storepaths'] == 0 && strstr($current, "/")) ? substr($current, strrpos($current, "/") + 1) : $current),
 					'type' => 0,
 					'ext' => substr($current, strrpos($current, ".")),
 					'stat' => stat($current)
@@ -246,11 +246,11 @@ class archive{
 	}
 
 	function parse_dir($dirname){
-		if($this->options['storepaths'] == 1 && !preg_match("/^(\.+\/*)+$/", $dirname)){
+		if($this->options['storepaths'] == 1 && !preg_match("/^(\\.+\\/*)+$/", $dirname)){
 			$files = array(
 				array(
 					'name' => $dirname,
-					'name2' => $this->options['prepend'] . preg_replace("/(\.+\/+)+/", "", ($this->options['storepaths'] == 0 && strstr($dirname, "/")) ? substr($dirname, strrpos($dirname, "/") + 1) : $dirname),
+					'name2' => $this->options['prepend'] . preg_replace("/(\\.+\\/+)+/", "", ($this->options['storepaths'] == 0 && strstr($dirname, "/")) ? substr($dirname, strrpos($dirname, "/") + 1) : $dirname),
 					'type' => 5,
 					'stat' => stat($dirname)
 				)
@@ -274,7 +274,7 @@ class archive{
 			} else if(@file_exists($dirname . "/" . $file)){
 				$files[] = array(
 					'name' => $dirname . "/" . $file,
-					'name2' => $this->options['prepend'] . preg_replace("/(\.+\/+)+/", "", ($this->options['storepaths'] == 0 && strstr($dirname . "/" . $file, "/")) ? substr($dirname . "/" . $file, strrpos($dirname . "/" . $file, "/") + 1) : $dirname . "/" . $file),
+					'name2' => $this->options['prepend'] . preg_replace("/(\\.+\\/+)+/", "", ($this->options['storepaths'] == 0 && strstr($dirname . "/" . $file, "/")) ? substr($dirname . "/" . $file, strrpos($dirname . "/" . $file, "/") + 1) : $dirname . "/" . $file),
 					'type' => 0,
 					'ext' => substr($file, strrpos($file, ".")),
 					'stat' => stat($dirname . "/" . $file)
