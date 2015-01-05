@@ -437,7 +437,7 @@ function view(){
 					header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 					header("Cache-Control: public");
 					header("Content-Description: File Transfer");
-					header("Content-Type: " . $ctype );
+					header("Content-Type: " . $ctype);
 					header("Content-Disposition: inline; filename=\"" . pathinfo($file, PATHINFO_BASENAME) . "\";");
 					header("Content-Transfer-Encoding: binary");
 					header("Content-Length: " . filesize($sys_file));
@@ -469,7 +469,7 @@ function view(){
 			}
 			// Malditas variaveis de sistema!! No windows doc_root é sempre em lowercase... cadê o str_ireplace() ??
 			$url .= str_replace($doc_root, "", "/" . $current_dir) . $filename;
-			$url = preg_replace("/[\\/]{2,}/","/",$url);
+			$url = str_replace(":/", "://", preg_replace("/[\\/]{2,}/", "/", $url));
 		} else{
 			$url = addslashes($path_info["basename"]) . "?action=4&current_dir=" . addslashes($current_dir) . "&filename=" . addslashes($filename) . "&passthru=1";
 		}
@@ -564,4 +564,9 @@ function server_info(){
     //-->
     </script>";
 	echo "</body>\n</html>";
+}
+
+function copyright_info(){
+	global $version;
+	return "<p style='margin: 0;padding: 0;'>原程序为<a href='http://phpfm.sourceforge.net/' target='_blank'>PHPFM(0.9.8)</a>,进行了部分错误和逻辑修改,转为<a href='http://www.loveyu.net/slfm' target='_blank'>SLFM({$version})</a>,由<a href='http://www.loveyu.org' target='_blank'>Loveyu</a>修改.</p>";
 }

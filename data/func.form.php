@@ -764,6 +764,7 @@ function dir_list_form(){
 			$tt = ($tf - $ti);
 			$out .= "
                 <tr><td bgcolor=\"#DDDDDD\" colspan=50><b>" . et('RenderTime') . ": " . substr($tt, 0, strrpos($tt, ".") + 5) . " " . et('Seconds') . "</td></tr>";
+			$out.= "<tr><td bgcolor=\"#DDDDDD\" colspan=50>".copyright_info()."</td></tr>";
 			$out .= "
             <script language=\"Javascript\" type=\"text/javascript\">
                 update_sel_status();
@@ -1203,7 +1204,7 @@ function config_form(){
 		echo " <font color=red>$Warning1</font>";
 	}
 	echo "
-    <tr><td align=right>" . et('Pass') . ":<td><input type=text size=30 name=newpass value=\"\" onkeypress=\"enterSubmit(event,'test_config_form(3)')\"></td></tr>
+    <tr><td align=right>" . et('Pass') . ":<td><input type=password size=30 name=newpass value=\"\" onkeypress=\"enterSubmit(event,'test_config_form(3)')\"></td></tr>
     <tr><td> <td><input type=button value=\"" . et('SavePass') . "\" onclick=\"test_config_form(3)\">";
 	if(strlen($Warning2)){
 		echo " <font color=red>$Warning2</font>";

@@ -20,30 +20,30 @@ class config{
 	function config(){
 		global $fm_self;
 		$this->data = array(
-			'lang' => 'zh',
-			'auth_pass' => md5('123456'),
+			'lang' => 'zh',//语言文件
+			'auth_pass' => md5(''),//默认密码为空
 			'quota_mb' => 0,
-			'upload_ext_filter' => array(),
-			'download_ext_filter' => array(),
+			'upload_ext_filter' => array(),//允许上传的文件后缀
+			'download_ext_filter' => array(),//允许下载的文件后缀
 			'error_reporting' => 2,//错误提示等级
-			'fm_root' => '',
-			'cookie_cache_time' => 60 * 60 * 24 * 30,
-			'version' => '0.10'
+			'fm_root' => '',//文件管理根目录
+			'cookie_cache_time' => 60 * 60 * 24 * 30,//登陆有效期
+			'version' => '0.10'//程序版本
 		);
-//		$data = false;
+		$data = false;
 		$this->filename = $fm_self;
-//		if(file_exists($this->filename)){
-//			$mat = file($this->filename);
-//			$objdata = trim(substr($mat[1], 2));
-//			if(strlen($objdata)){
-//				$data = unserialize($objdata);
-//			}
-//		}
-//		if(is_array($data) && count($data) == count($this->data)){
-//			$this->data = $data;
-//		} else{
-//			$this->save();
-//		}
+		if(file_exists($this->filename)){
+			$mat = file($this->filename);
+			$objdata = trim(substr($mat[1], 2));
+			if(strlen($objdata)){
+				$data = unserialize($objdata);
+			}
+		}
+		if(is_array($data) && count($data) == count($this->data)){
+			$this->data = $data;
+		} else{
+			$this->save();
+		}
 	}
 
 	//保存

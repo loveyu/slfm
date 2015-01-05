@@ -130,7 +130,7 @@ if(!isset($resolveIDs)){
 	$resolveIDs = ($resolveIDs) ? 0 : 1;
 	setcookie("resolveIDs", $resolveIDs, time() + $cookie_cache_time, "/");
 }
-if($resolveIDs){
+if(isset($resolveIDs) && $resolveIDs){
 	exec("cat /etc/passwd", $mat_passwd);
 	exec("cat /etc/group", $mat_group);
 }
