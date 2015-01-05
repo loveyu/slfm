@@ -118,8 +118,10 @@ function et($tag){
 	$en['Disabled Errors'] = "Disable";
 	$en['Show Errors'] = "Show Errors";
 	$en['Show All Errors'] = "Show All Errors";
+	$en['UpdateResult'] = "Update Result";
 
 	//中文语言设置
+	$en['UpdateResult'] = "更新结果";
 	$zh['Version'] = '版本';
 	$zh['DocRoot'] = '文档根目录';
 	$zh['FLRoot'] = '文件管理根目录';

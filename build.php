@@ -19,8 +19,8 @@ foreach($list as $v){
 	if(substr($content, 0, 5) == "<?php"){
 		$content = substr($content, 5);
 	}
-	$output_content .= "\r\n\r\n\r\n/*-- 文件: {$v} ---*/\r\n";
-	$output_content .= $content . "\r\n";
+	$output_content .= "\r\n\r\n/*-- 文件: {$v} ---*/\r\n";
+	$output_content .= trim($content) . "\r\n";
 	//echo $v . "\n";
 }
 file_put_contents($out_file, $output_content);
