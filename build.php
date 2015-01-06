@@ -13,6 +13,24 @@ $output_content = "<?php
 //
 //首行为配置文件，请勿删除，创建时间：$time
 ";
+$fm_self = "___";//不纯在的文件
+include_once("data/class.config.php");
+$config = new config();
+$config->load();
+/**
+ * @var $version string
+ */
+$output_content.="\n/*--------------------------------------------------
+ | SINGLE FILE PHP FILE MANAGER
+ +--------------------------------------------------
+ | SLFM {$version}
+ | Edit By loveyu
+ | E-mail: admin@loveyu.info
+ | URL: http://www.loveyu.net/slfm
+ | Last Changed: {$time}
+ +--------------------------------------------------
+ */";
+
 $list = array('copyright.txt');//添加版权信息
 $list = array_merge($list, $matches[1]);
 foreach($list as $v){
