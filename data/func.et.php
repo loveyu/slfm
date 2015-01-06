@@ -119,9 +119,13 @@ function et($tag){
 	$en['Show Errors'] = "Show Errors";
 	$en['Show All Errors'] = "Show All Errors";
 	$en['UpdateResult'] = "Update Result";
+	$en['TimeZone'] = "TimeZone";
+	$en['TimeZoneList'] = "See time zone list";
 
 	//中文语言设置
-	$en['UpdateResult'] = "更新结果";
+	$zh['TimeZone'] = "时区";
+	$zh['TimeZoneList'] = "查看时区列表";
+	$zh['UpdateResult'] = "更新结果";
 	$zh['Version'] = '版本';
 	$zh['DocRoot'] = '文档根目录';
 	$zh['FLRoot'] = '文件管理根目录';

@@ -4,15 +4,15 @@
  */
 function config_form(){
 	global $cfg;
-	global $current_dir, $fm_self, $doc_root, $path_info, $fm_current_root, $lang, $error_reporting, $version;
-	global $config_action, $newpass, $newlang, $newerror, $newfm_root;
+	global $current_dir, $fm_self, $doc_root, $path_info, $fm_current_root, $lang, $error_reporting, $version, $timezone;
+	global $config_action, $newpass, $newlang, $newerror, $newfm_root,$new_timezone;
 	$data = array();
 	$Warning1 = "";
 	$Warning2 = "";
 	switch($config_action){
 		case 1:
-			$update_msg = file_get_contents("http://www.loveyu.net/Update/slfm.php?version=".$version);
-			$update_msg = json_decode($update_msg,true);
+			$update_msg = file_get_contents("http://www.loveyu.net/Update/slfm.php?version=" . $version);
+			$update_msg = json_decode($update_msg, true);
 			if(!is_array($update_msg) || !isset($update_msg['top_version'])){
 				unset($update_msg);
 			}
@@ -22,6 +22,11 @@ function config_form(){
 			if($cfg->data['lang'] != $newlang){
 				$cfg->data['lang'] = $newlang;
 				$lang = $newlang;
+				$reload = true;
+			}
+			if($cfg->data['timezone'] != $new_timezone){
+				$cfg->data['timezone'] = $new_timezone;
+				$timezone = $new_timezone;
 				$reload = true;
 			}
 			if($cfg->data['error_reporting'] != $newerror){
@@ -68,11 +73,11 @@ function config_form(){
     <tr><td align=right>" . et('Website') . ":<td><a href=\"JavaScript:open_win('http://www.loveyu.net/slfm')\">http://www.loveyu.net/slfm</a>&nbsp;&nbsp;&nbsp;<input type=button value=\"" . et('ChkVer') . "\" onclick=\"test_config_form(1)\"></td></tr>
 	</form>";
 	if(isset($update_msg)){
-		$flag = version_compare($version,$update_msg['top_version'],"<");
+		$flag = version_compare($version, $update_msg['top_version'], "<");
 		if($flag){
-			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td style=\"color: #f51\"><strong>(".$update_msg['top_version'].")</strong>,<a href=\"".$update_msg['top_download']."\">".et("ChkVerAvailable")."</a></a></a></td></tr>";
-		}else{
-			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td>".et("ChkVerNotAvailable")."</td></tr>";
+			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td style=\"color: #f51\"><strong>(" . $update_msg['top_version'] . ")</strong>,<a href=\"" . $update_msg['top_download'] . "\">" . et("ChkVerAvailable") . "</a></a></a></td></tr>";
+		} else{
+			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td>" . et("ChkVerNotAvailable") . "</td></tr>";
 		}
 	}
 	echo "
@@ -82,6 +87,7 @@ function config_form(){
     <input type=hidden name=config_action value=0>
     <tr><td align=right width=1><nobr>" . et('DocRoot') . ":</nobr><td>" . $doc_root . "</td></tr>
     <tr><td align=right><nobr>" . et('FLRoot') . ":</nobr><td><input type=text size=60 name=newfm_root value=\"" . $cfg->data['fm_root'] . "\" onkeypress=\"enterSubmit(event,'test_config_form(2)')\"></td></tr>
+    <tr><td align=right><nobr>" . et('TimeZone') . ":</nobr><td><input type=text size=25 name=new_timezone value=\"" . $timezone . "\" onkeypress=\"enterSubmit(event,'test_config_form(2)')\">&nbsp;&nbsp;<a target=\"_blank\" href=\"http://php.net/manual/zh/timezones.php\">".et("TimeZoneList")."</a> </td></tr>
     <tr><td align=right>" . et('Lang') . ":<td>
 	<select name=newlang>
 		<option value=en>English - by Fabricio Seger Kolling</option>
@@ -115,7 +121,7 @@ function config_form(){
 	}
 	echo "
     <tr><td align=right>" . et('Pass') . ":<td><input type=password size=30 name=newpass value=\"\" onkeypress=\"enterSubmit(event,'test_config_form(3)')\"></td></tr>
-    <tr><td> <td><input type=button value=\"" . et('SavePass') . "\" onclick=\"test_config_form(3)\">";
+    <tr><td><td><input type=button value=\"" . et('SavePass') . "\" onclick=\"test_config_form(3)\">";
 	if(strlen($Warning2)){
 		echo " <font color=red>$Warning2</font>";
 	}

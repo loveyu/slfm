@@ -70,8 +70,12 @@ $cfg->load();
  * @var string $fm_root             文件根目录
  * @var int    $cookie_cache_time   COOKIE有效时间
  * @var string $version             程序版本
+ * @var string $timezone            程序版本
  */
-
+if(!isset($timezone) || empty($timezone)){
+	$timezone = "PRC";
+}
+date_default_timezone_set($timezone);//时区设置
 switch($error_reporting){
 	case 0:
 		error_reporting(0);
