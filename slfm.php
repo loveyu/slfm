@@ -1,6 +1,6 @@
 <?php
 //
-//首行为配置文件，请勿删除，创建时间：2015-01-06 18:09:03
+//首行为配置文件，请勿删除，创建时间：2015-01-06 18:11:51
 
 
 /*-- 文件: copyright.txt ---*/
@@ -76,7 +76,7 @@ class config{
 			'error_reporting' => 2,//错误提示等级
 			'fm_root' => '',//文件管理根目录
 			'cookie_cache_time' => 60 * 60 * 24 * 30,//登陆有效期
-			'version' => '0.10.0',//程序版本
+			'version' => '0.10.1',//程序版本
 			'timezone' => 'PRC'//时区
 		);
 		$data = false;
@@ -797,17 +797,20 @@ function execute_cmd(){
  */
 function execute_file(){
 	global $current_dir, $filename;
-	header("Content-type: text/plain");
+	header("Content-type: text/plain; charset=" . CHARSET_FILE);
 	if(!function_exists('exec')){
 		echo 'exec function is disable';
 		return;
 	}
 	$file = nameToSys($current_dir . $filename);
 	if(file_exists($file)){
-		echo "# " . $file . "\n";
+		echo "# " . $current_dir . $filename . "\n";
 		exec($file, $mat);
 		if(count($mat)){
-			echo trim(implode("\n", $mat));
+			$mat = convert_page_encode(implode("\r\n", $mat));
+			echo trim($mat);
+		} else{
+			echo "exec(\"$current_dir . $filename\") " . et('NoReturn') . "...";
 		}
 	} else{
 		alert(et('FileNotFound') . ": " . $file);

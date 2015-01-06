@@ -164,17 +164,20 @@ function execute_cmd(){
  */
 function execute_file(){
 	global $current_dir, $filename;
-	header("Content-type: text/plain");
+	header("Content-type: text/plain; charset=" . CHARSET_FILE);
 	if(!function_exists('exec')){
 		echo 'exec function is disable';
 		return;
 	}
 	$file = nameToSys($current_dir . $filename);
 	if(file_exists($file)){
-		echo "# " . $file . "\n";
+		echo "# " . $current_dir . $filename . "\n";
 		exec($file, $mat);
 		if(count($mat)){
-			echo trim(implode("\n", $mat));
+			$mat = convert_page_encode(implode("\r\n", $mat));
+			echo trim($mat);
+		} else{
+			echo "exec(\"$current_dir . $filename\") " . et('NoReturn') . "...";
 		}
 	} else{
 		alert(et('FileNotFound') . ": " . $file);
