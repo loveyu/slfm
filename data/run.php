@@ -78,19 +78,16 @@ if(!isset($timezone) || empty($timezone)){
 date_default_timezone_set($timezone);//时区设置
 switch($error_reporting){
 	case 0:
+		ini_set('display_errors', 'Off');
 		error_reporting(0);
-		@ini_set("display_errors", 0);
-		@ini_set('display_errors', 'off');
 		break;
 	case 1:
+		ini_set('display_errors', 'On');
 		error_reporting(E_ERROR | E_PARSE | E_COMPILE_ERROR);
-		@ini_set("display_errors", 1);
-		@ini_set('display_errors', 'on');
 		break;
 	case 2:
+		ini_set('display_errors', 'On');
 		error_reporting(E_ALL | E_STRICT);
-		@ini_set("display_errors", 1);
-		@ini_set('display_errors', 'on');
 		break;
 }
 if(!isset($current_dir)){
@@ -134,9 +131,12 @@ if(!isset($resolveIDs)){
 	$resolveIDs = ($resolveIDs) ? 0 : 1;
 	setcookie("resolveIDs", $resolveIDs, time() + $cookie_cache_time, "/");
 }
-if(isset($resolveIDs) && $resolveIDs){
-	exec("cat /etc/passwd", $mat_passwd);
-	exec("cat /etc/group", $mat_group);
+if(isset($resolveIDs) && $resolveIDs && $islinux && function_exists('exec')){
+		exec("cat /etc/passwd", $mat_passwd);
+		exec("cat /etc/group", $mat_group);
+}else{
+	$mat_passwd = array();
+	$mat_group = array();
 }
 $fm_color['Bg'] = "EEEEEE";
 $fm_color['Text'] = "000000";

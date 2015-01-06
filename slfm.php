@@ -1,6 +1,6 @@
 <?php
 //
-//首行为配置文件，请勿删除，创建时间：2015-01-06 00:34:11
+//首行为配置文件，请勿删除，创建时间：2015-01-06 18:09:03
 
 
 /*-- 文件: copyright.txt ---*/
@@ -76,7 +76,8 @@ class config{
 			'error_reporting' => 2,//错误提示等级
 			'fm_root' => '',//文件管理根目录
 			'cookie_cache_time' => 60 * 60 * 24 * 30,//登陆有效期
-			'version' => '0.10.0'//程序版本
+			'version' => '0.10.0',//程序版本
+			'timezone' => 'PRC'//时区
 		);
 		$data = false;
 		$this->filename = $fm_self;
@@ -772,6 +773,10 @@ function download(){
 function execute_cmd(){
 	global $cmd;
 	header("Content-type: text/plain; charset=" . CHARSET_FILE);
+	if(!function_exists('exec')){
+		echo 'exec function is disable';
+		return;
+	}
 	$cmd = nameToSys($cmd);
 	if(strlen($cmd)){
 		echo "# " . $cmd . "\n";
@@ -793,7 +798,11 @@ function execute_cmd(){
 function execute_file(){
 	global $current_dir, $filename;
 	header("Content-type: text/plain");
-	$file = $current_dir . $filename;
+	if(!function_exists('exec')){
+		echo 'exec function is disable';
+		return;
+	}
+	$file = nameToSys($current_dir . $filename);
 	if(file_exists($file)){
 		echo "# " . $file . "\n";
 		exec($file, $mat);
@@ -1392,9 +1401,13 @@ function et($tag){
 	$en['Show Errors'] = "Show Errors";
 	$en['Show All Errors'] = "Show All Errors";
 	$en['UpdateResult'] = "Update Result";
+	$en['TimeZone'] = "TimeZone";
+	$en['TimeZoneList'] = "See time zone list";
 
 	//中文语言设置
-	$en['UpdateResult'] = "更新结果";
+	$zh['TimeZone'] = "时区";
+	$zh['TimeZoneList'] = "查看时区列表";
+	$zh['UpdateResult'] = "更新结果";
 	$zh['Version'] = '版本';
 	$zh['DocRoot'] = '文档根目录';
 	$zh['FLRoot'] = '文件管理根目录';
@@ -1415,7 +1428,7 @@ function et($tag){
 	$zh['Rem'] = '删除';
 	$zh['Compress'] = '压缩';
 	$zh['Decompress'] = '解压';
-	$zh['ResolveIDs'] = 'Resolve IDs';
+	$zh['ResolveIDs'] = '切换权限模式';
 	$zh['Move'] = '移动';
 	$zh['Copy'] = '复制';
 	$zh['ServerInfo'] = '服务器信息';
@@ -5498,15 +5511,15 @@ function shell_form(){
  */
 function config_form(){
 	global $cfg;
-	global $current_dir, $fm_self, $doc_root, $path_info, $fm_current_root, $lang, $error_reporting, $version;
-	global $config_action, $newpass, $newlang, $newerror, $newfm_root;
+	global $current_dir, $fm_self, $doc_root, $path_info, $fm_current_root, $lang, $error_reporting, $version, $timezone;
+	global $config_action, $newpass, $newlang, $newerror, $newfm_root,$new_timezone;
 	$data = array();
 	$Warning1 = "";
 	$Warning2 = "";
 	switch($config_action){
 		case 1:
-			$update_msg = file_get_contents("http://www.loveyu.net/Update/slfm.php?version=".$version);
-			$update_msg = json_decode($update_msg,true);
+			$update_msg = file_get_contents("http://www.loveyu.net/Update/slfm.php?version=" . $version);
+			$update_msg = json_decode($update_msg, true);
 			if(!is_array($update_msg) || !isset($update_msg['top_version'])){
 				unset($update_msg);
 			}
@@ -5516,6 +5529,11 @@ function config_form(){
 			if($cfg->data['lang'] != $newlang){
 				$cfg->data['lang'] = $newlang;
 				$lang = $newlang;
+				$reload = true;
+			}
+			if($cfg->data['timezone'] != $new_timezone){
+				$cfg->data['timezone'] = $new_timezone;
+				$timezone = $new_timezone;
 				$reload = true;
 			}
 			if($cfg->data['error_reporting'] != $newerror){
@@ -5562,11 +5580,11 @@ function config_form(){
     <tr><td align=right>" . et('Website') . ":<td><a href=\"JavaScript:open_win('http://www.loveyu.net/slfm')\">http://www.loveyu.net/slfm</a>&nbsp;&nbsp;&nbsp;<input type=button value=\"" . et('ChkVer') . "\" onclick=\"test_config_form(1)\"></td></tr>
 	</form>";
 	if(isset($update_msg)){
-		$flag = version_compare($version,$update_msg['top_version'],"<");
+		$flag = version_compare($version, $update_msg['top_version'], "<");
 		if($flag){
-			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td style=\"color: #f51\"><strong>(".$update_msg['top_version'].")</strong>,<a href=\"".$update_msg['top_download']."\">".et("ChkVerAvailable")."</a></a></a></td></tr>";
-		}else{
-			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td>".et("ChkVerNotAvailable")."</td></tr>";
+			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td style=\"color: #f51\"><strong>(" . $update_msg['top_version'] . ")</strong>,<a href=\"" . $update_msg['top_download'] . "\">" . et("ChkVerAvailable") . "</a></a></a></td></tr>";
+		} else{
+			echo "<tr><td align=right>" . et('UpdateResult') . ":</td><td>" . et("ChkVerNotAvailable") . "</td></tr>";
 		}
 	}
 	echo "
@@ -5576,6 +5594,7 @@ function config_form(){
     <input type=hidden name=config_action value=0>
     <tr><td align=right width=1><nobr>" . et('DocRoot') . ":</nobr><td>" . $doc_root . "</td></tr>
     <tr><td align=right><nobr>" . et('FLRoot') . ":</nobr><td><input type=text size=60 name=newfm_root value=\"" . $cfg->data['fm_root'] . "\" onkeypress=\"enterSubmit(event,'test_config_form(2)')\"></td></tr>
+    <tr><td align=right><nobr>" . et('TimeZone') . ":</nobr><td><input type=text size=25 name=new_timezone value=\"" . $timezone . "\" onkeypress=\"enterSubmit(event,'test_config_form(2)')\">&nbsp;&nbsp;<a target=\"_blank\" href=\"http://php.net/manual/zh/timezones.php\">".et("TimeZoneList")."</a> </td></tr>
     <tr><td align=right>" . et('Lang') . ":<td>
 	<select name=newlang>
 		<option value=en>English - by Fabricio Seger Kolling</option>
@@ -5609,7 +5628,7 @@ function config_form(){
 	}
 	echo "
     <tr><td align=right>" . et('Pass') . ":<td><input type=password size=30 name=newpass value=\"\" onkeypress=\"enterSubmit(event,'test_config_form(3)')\"></td></tr>
-    <tr><td> <td><input type=button value=\"" . et('SavePass') . "\" onclick=\"test_config_form(3)\">";
+    <tr><td><td><input type=button value=\"" . et('SavePass') . "\" onclick=\"test_config_form(3)\">";
 	if(strlen($Warning2)){
 		echo " <font color=red>$Warning2</font>";
 	}
@@ -5682,6 +5701,9 @@ if(@get_magic_quotes_gpc()){
 	$_POST = array_map('stripslashes_deep', $_POST);
 	$_GET = array_map('stripslashes_deep', $_GET);
 	$_COOKIE = array_map('stripslashes_deep', $_COOKIE);
+}
+if(!function_exists('mb_convert_encoding')){
+	exit_msg("此程序主要针对中文支持优化，故必须开启mbstring拓展，否则无法运行！");
 }
 
 
@@ -5757,23 +5779,24 @@ $cfg->load();
  * @var string $fm_root             文件根目录
  * @var int    $cookie_cache_time   COOKIE有效时间
  * @var string $version             程序版本
+ * @var string $timezone            程序版本
  */
-
+if(!isset($timezone) || empty($timezone)){
+	$timezone = "PRC";
+}
+date_default_timezone_set($timezone);//时区设置
 switch($error_reporting){
 	case 0:
+		ini_set('display_errors', 'Off');
 		error_reporting(0);
-		@ini_set("display_errors", 0);
-		@ini_set('display_errors', 'off');
 		break;
 	case 1:
+		ini_set('display_errors', 'On');
 		error_reporting(E_ERROR | E_PARSE | E_COMPILE_ERROR);
-		@ini_set("display_errors", 1);
-		@ini_set('display_errors', 'on');
 		break;
 	case 2:
+		ini_set('display_errors', 'On');
 		error_reporting(E_ALL | E_STRICT);
-		@ini_set("display_errors", 1);
-		@ini_set('display_errors', 'on');
 		break;
 }
 if(!isset($current_dir)){
@@ -5817,9 +5840,12 @@ if(!isset($resolveIDs)){
 	$resolveIDs = ($resolveIDs) ? 0 : 1;
 	setcookie("resolveIDs", $resolveIDs, time() + $cookie_cache_time, "/");
 }
-if(isset($resolveIDs) && $resolveIDs){
-	exec("cat /etc/passwd", $mat_passwd);
-	exec("cat /etc/group", $mat_group);
+if(isset($resolveIDs) && $resolveIDs && $islinux && function_exists('exec')){
+		exec("cat /etc/passwd", $mat_passwd);
+		exec("cat /etc/group", $mat_group);
+}else{
+	$mat_passwd = array();
+	$mat_group = array();
 }
 $fm_color['Bg'] = "EEEEEE";
 $fm_color['Text'] = "000000";

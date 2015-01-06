@@ -146,7 +146,7 @@ function et($tag){
 	$zh['Rem'] = '删除';
 	$zh['Compress'] = '压缩';
 	$zh['Decompress'] = '解压';
-	$zh['ResolveIDs'] = 'Resolve IDs';
+	$zh['ResolveIDs'] = '切换权限模式';
 	$zh['Move'] = '移动';
 	$zh['Copy'] = '复制';
 	$zh['ServerInfo'] = '服务器信息';

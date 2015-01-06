@@ -36,3 +36,6 @@ if(@get_magic_quotes_gpc()){
 	$_GET = array_map('stripslashes_deep', $_GET);
 	$_COOKIE = array_map('stripslashes_deep', $_COOKIE);
 }
+if(!function_exists('mb_convert_encoding')){
+	exit_msg("此程序主要针对中文支持优化，故必须开启mbstring拓展，否则无法运行！");
+}

