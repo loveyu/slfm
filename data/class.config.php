@@ -28,7 +28,7 @@ class config{
 			'error_reporting' => 2,//错误提示等级
 			'fm_root' => '',//文件管理根目录
 			'cookie_cache_time' => 60 * 60 * 24 * 30,//登陆有效期
-			'version' => '0.10.1',//程序版本
+			'version' => '0.10.2',//程序版本
 			'timezone' => 'PRC'//时区
 		);
 		$data = false;
