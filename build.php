@@ -7,7 +7,7 @@
 $out_file = "slfm.php";
 $min_file = "slfm.min.php";
 $content = file_get_contents("index.php");
-preg_match_all("/include_once\\(\"([a-z0-9A-Z.-\\/]+?)\"\\)/", $content, $matches);
+preg_match_all("/include_once\\(\"([a-z0-9A-Z.\\_\\-\\/]+?)\"\\)/", $content, $matches);
 $time = date("Y-m-d H:i:s");
 $output_content = "<?php
 //

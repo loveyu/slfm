@@ -149,8 +149,7 @@ function frame3(){
 			case 71: // compress sel
 				if(strlen($cmd_arg)){
 					ignore_user_abort(true);
-					ini_set("display_errors", 0);
-					ini_set("max_execution_time", 0);
+					set_time_limit(0);
 					$zipfile = false;
 					if(strstr($cmd_arg, ".tar")){
 						$zipfile = new Tar_file(nameToSys($cmd_arg));

@@ -1,6 +1,6 @@
 <?php
 //
-//首行为配置文件，请勿删除，创建时间：2015-01-06 18:30:35
+//首行为配置文件，请勿删除，创建时间：2015-01-08 17:28:12
 
 /*--------------------------------------------------
  | SINGLE FILE PHP FILE MANAGER
@@ -9,7 +9,7 @@
  | Edit By loveyu
  | E-mail: admin@loveyu.info
  | URL: http://www.loveyu.net/slfm
- | Last Changed: 2015-01-06 18:30:35
+ | Last Changed: 2015-01-08 17:28:12
  +--------------------------------------------------
  */
 
@@ -441,6 +441,343 @@ class Archive{
 		header("Cache-Control: no-cache, must-revalidate, max-age=60");
 		header("Expires: Sat, 01 Jan 2000 12:00:00 GMT");
 		print($this->archive);
+	}
+}
+
+
+/*-- 文件: data/class.tar_file.php ---*/
+class Tar_file extends Archive{
+	function __construct($name){
+		parent::__construct($name);
+		$this->options['type'] = "tar";
+	}
+	function test(){
+		$flag = parent::test();
+		return $flag;
+	}
+	function create_tar(){
+		$pwd = getcwd();
+		chdir($this->options['basedir']);
+
+		foreach($this->files as $current){
+			if($current['name'] == $this->options['name']){
+				continue;
+			}
+			if(strlen($current['name2']) > 99){
+				$path = substr($current['name2'], 0, strpos($current['name2'], "/", strlen($current['name2']) - 100) + 1);
+				$current['name2'] = substr($current['name2'], strlen($path));
+				if(strlen($path) > 154 || strlen($current['name2']) > 99){
+					$this->error[] = "Could not add {$path}{$current['name2']} to archive because the filename is too long.";
+					continue;
+				}
+			}
+			$block = pack("a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12", $current['name2'], sprintf("%07o", $current['stat'][2]), sprintf("%07o", $current['stat'][4]), sprintf("%07o", $current['stat'][5]), sprintf("%011o", $current['type'] == 2 ? 0 : $current['stat'][7]), sprintf("%011o", $current['stat'][9]), "        ", $current['type'], $current['type'] == 2 ? @readlink($current['name']) : "", "ustar ", " ", "Unknown", "Unknown", "", "", !empty ($path) ? $path : "", "");
+
+			$checksum = 0;
+			for($i = 0; $i < 512; $i++){
+				$checksum += ord(substr($block, $i, 1));
+			}
+			$checksum = pack("a8", sprintf("%07o", $checksum));
+			$block = substr_replace($block, $checksum, 148, 8);
+
+			if($current['type'] == 2 || $current['stat'][7] == 0){
+				$this->add_data($block);
+			} else if($fp = @fopen($current['name'], "rb")){
+				$this->add_data($block);
+				while($temp = fread($fp, 1048576)){
+					$this->add_data($temp);
+				}
+				if($current['stat'][7] % 512 > 0){
+					$temp = "";
+					for($i = 0; $i < 512 - $current['stat'][7] % 512; $i++){
+						$temp .= "\0";
+					}
+					$this->add_data($temp);
+				}
+				fclose($fp);
+			} else{
+				$this->error[] = "Could not open file {$current['name']} for reading. It was not added.";
+			}
+		}
+
+		$this->add_data(pack("a1024", ""));
+
+		chdir($pwd);
+
+		return 1;
+	}
+
+	function extract_files(){
+		$pwd = getcwd();
+		chdir($this->options['basedir']);
+
+		if($fp = $this->open_archive()){
+			if($this->options['inmemory'] == 1){
+				$this->files = array();
+			}
+
+			while($block = fread($fp, 512)){
+				$temp = unpack("a100name/a8mode/a8uid/a8gid/a12size/a12mtime/a8checksum/a1type/a100symlink/a6magic/a2temp/a32temp/a32temp/a8temp/a8temp/a155prefix/a12temp", $block);
+				$file = array(
+					'name' => trim($temp['prefix'] . $temp['name']),
+					'stat' => array(
+						2 => trim($temp['mode']),
+						4 => octdec(trim($temp['uid'])),
+						5 => octdec(trim($temp['gid'])),
+						7 => octdec(trim($temp['size'])),
+						9 => octdec(trim($temp['mtime'])),
+					),
+					'checksum' => octdec(trim($temp['checksum'])),
+					'type' => trim($temp['type']),
+					'magic' => trim($temp['magic']),
+				);
+				if($file['checksum'] == 0x00000000){
+					break;
+				} else if(substr($file['magic'], 0, 5) != "ustar"){
+					$this->error[] = "This script does not support extracting this type of tar file.";
+					break;
+				}
+				$block = substr_replace($block, "        ", 148, 8);
+				$checksum = 0;
+				for($i = 0; $i < 512; $i++){
+					$checksum += ord(substr($block, $i, 1));
+				}
+
+
+				if($file['checksum'] != $checksum){
+					$this->error[] = "Could not extract from {$this->options['name']}, it is corrupt.";
+				}
+				if($this->options['inmemory'] == 1){
+					$file['data'] = fread($fp, $file['stat'][7]);
+					fread($fp, (512 - $file['stat'][7] % 512) == 512 ? 0 : (512 - $file['stat'][7] % 512));
+					unset ($file['checksum'], $file['magic']);
+					$this->files[] = $file;
+				} else if($file['type'] == 5){
+					if(!is_dir($file['name'])){
+						if(!mkdir($file['name'], $file['stat'][2], true)){
+							var_dump($file);
+						}
+					}
+				} else if($this->options['overwrite'] == 0 && file_exists($file['name'])){
+					$this->error[] = "{$file['name']} already exists.";
+					continue;
+				} else if($file['type'] == 2){
+					symlink($temp['symlink'], $file['name']);
+					//chmod($file['name'], $file['stat'][2]);
+				} else if($new = @fopen($file['name'], "wb")){
+					fwrite($new, fread($fp, $file['stat'][7]));
+					fread($fp, (512 - $file['stat'][7] % 512) == 512 ? 0 : (512 - $file['stat'][7] % 512));
+					fclose($new);
+					//chmod($file['name'], $file['stat'][2]);
+				} else{
+					$this->error[] = "Could not open {$file['name']} for writing (probably permission denied).";
+					continue;
+				}
+				//echo $file['name'];
+				/*chown($file['name'], $file['stat'][4]);
+				chgrp($file['name'], $file['stat'][5]);
+				touch($file['name'], $file['stat'][9]);*/
+				unset ($file);
+			}
+		} else{
+			$this->error[] = "Could not open file {$this->options['name']}";
+		}
+
+		chdir($pwd);
+	}
+
+	function open_archive(){
+		return @fopen($this->options['name'], "rb");
+	}
+}
+
+
+/*-- 文件: data/class.gzip_file.php ---*/
+class Gzip_file extends Tar_file{
+	function __construct($name){
+		parent::__construct($name);
+		$this->options['type'] = "gzip";
+	}
+
+	function create_gzip(){
+		if($this->options['inmemory'] == 0){
+			$pwd = getcwd();
+			chdir($this->options['basedir']);
+			if($fp = gzopen($this->options['name'], "wb{$this->options['level']}")){
+				fseek($this->archive, 0);
+				while($temp = fread($this->archive, 1048576)){
+					gzwrite($fp, $temp);
+				}
+				gzclose($fp);
+				chdir($pwd);
+			} else{
+				$this->error[] = "Could not open {$this->options['name']} for writing.";
+				chdir($pwd);
+				return 0;
+			}
+		} else{
+			$this->archive = gzencode($this->archive, $this->options['level']);
+		}
+
+		return 1;
+	}
+
+	function open_archive(){
+		return @gzopen($this->options['name'], "rb");
+	}
+}
+
+
+/*-- 文件: data/class.zip_file.php ---*/
+class Zip_file extends Archive{
+
+	function __construct($name){
+		parent::__construct($name);
+		$this->options['type'] = "zip";
+	}
+
+	function test(){
+		$flag = parent::test();
+		if($flag!==true){
+			return $flag;
+		}
+		if(function_exists('gzcompress')){
+			return true;
+		} else{
+			return "Zip compress is not support.";
+		}
+	}
+
+	function create_zip(){
+		$files = 0;
+		$offset = 0;
+		$central = "";
+		if(!empty ($this->options['sfx'])){
+			if($fp = @fopen($this->options['sfx'], "rb")){
+				$temp = fread($fp, filesize($this->options['sfx']));
+				fclose($fp);
+				$this->add_data($temp);
+				$offset += strlen($temp);
+				unset ($temp);
+			} else{
+				$this->error[] = "Could not open sfx module from {$this->options['sfx']}.";
+			}
+		}
+
+		$pwd = getcwd();
+		chdir($this->options['basedir']);
+
+		foreach($this->files as $current){
+			if($current['name'] == $this->options['name']){
+				continue;
+			}
+
+			$timedate = explode(" ", date("Y n j G i s", $current['stat'][9]));
+			$timedate = ($timedate[0] - 1980 << 25) | ($timedate[1] << 21) | ($timedate[2] << 16) | ($timedate[3] << 11) | ($timedate[4] << 5) | ($timedate[5]);
+
+			$block = pack("VvvvV", 0x04034b50, 0x000A, 0x0000, (isset($current['method']) || $this->options['method'] == 0) ? 0x0000 : 0x0008, $timedate);
+
+			if($current['stat'][7] == 0 && $current['type'] == 5){
+				$block .= pack("VVVvv", 0x00000000, 0x00000000, 0x00000000, strlen($current['name2']) + 1, 0x0000);
+				$block .= $current['name2'] . "/";
+				$this->add_data($block);
+				$central .= pack("VvvvvVVVVvvvvvVV", 0x02014b50, 0x0014, $this->options['method'] == 0 ? 0x0000 : 0x000A, 0x0000, (isset($current['method']) || $this->options['method'] == 0) ? 0x0000 : 0x0008, $timedate, 0x00000000, 0x00000000, 0x00000000, strlen($current['name2']) + 1, 0x0000, 0x0000, 0x0000, 0x0000, $current['type'] == 5 ? 0x00000010 : 0x00000000, $offset);
+				$central .= $current['name2'] . "/";
+				$files++;
+				$offset += (31 + strlen($current['name2']));
+			} else if($current['stat'][7] == 0){
+				$block .= pack("VVVvv", 0x00000000, 0x00000000, 0x00000000, strlen($current['name2']), 0x0000);
+				$block .= $current['name2'];
+				$this->add_data($block);
+				$central .= pack("VvvvvVVVVvvvvvVV", 0x02014b50, 0x0014, $this->options['method'] == 0 ? 0x0000 : 0x000A, 0x0000, (isset($current['method']) || $this->options['method'] == 0) ? 0x0000 : 0x0008, $timedate, 0x00000000, 0x00000000, 0x00000000, strlen($current['name2']), 0x0000, 0x0000, 0x0000, 0x0000, $current['type'] == 5 ? 0x00000010 : 0x00000000, $offset);
+				$central .= $current['name2'];
+				$files++;
+				$offset += (30 + strlen($current['name2']));
+			} else if($fp = @fopen($current['name'], "rb")){
+				$temp = fread($fp, $current['stat'][7]);
+				fclose($fp);
+				$crc32 = crc32($temp);
+				if(!isset($current['method']) && $this->options['method'] == 1){
+					$temp = gzcompress($temp, $this->options['level']);
+					$size = strlen($temp) - 6;
+					$temp = substr($temp, 2, $size);
+				} else{
+					$size = strlen($temp);
+				}
+				$block .= pack("VVVvv", $crc32, $size, $current['stat'][7], strlen($current['name2']), 0x0000);
+				$block .= $current['name2'];
+				$this->add_data($block);
+				$this->add_data($temp);
+				unset ($temp);
+				$central .= pack("VvvvvVVVVvvvvvVV", 0x02014b50, 0x0014, $this->options['method'] == 0 ? 0x0000 : 0x000A, 0x0000, (isset($current['method']) || $this->options['method'] == 0) ? 0x0000 : 0x0008, $timedate, $crc32, $size, $current['stat'][7], strlen($current['name2']), 0x0000, 0x0000, 0x0000, 0x0000, 0x00000000, $offset);
+				$central .= $current['name2'];
+				$files++;
+				$offset += (30 + strlen($current['name2']) + $size);
+			} else{
+				$this->error[] = "Could not open file {$current['name']} for reading. It was not added.";
+			}
+		}
+
+		$this->add_data($central);
+
+		$this->add_data(pack("VvvvvVVv", 0x06054b50, 0x0000, 0x0000, $files, $files, strlen($central), $offset, !empty ($this->options['comment']) ? strlen($this->options['comment']) : 0x0000));
+
+		if(!empty ($this->options['comment'])){
+			$this->add_data($this->options['comment']);
+		}
+
+		chdir($pwd);
+
+		return 1;
+	}
+}
+
+
+/*-- 文件: data/class.bzip_file.php ---*/
+class Bzip_file extends Tar_file{
+	function __construct($name){
+		parent::__construct($name);
+		$this->options['type'] = "bzip";
+	}
+
+	function test(){
+		$flag = parent::test();
+		if($flag!==true){
+			return $flag;
+		}
+		if(function_exists('bzopen')){
+			return true;
+		}else{
+			return "Bzip compress is not support.";
+		}
+	}
+
+	function create_bzip(){
+		if($this->options['inmemory'] == 0){
+			$pwd = getcwd();
+			chdir($this->options['basedir']);
+			$fp = bzopen($this->options['name'], "w");
+			if($fp){
+				fseek($this->archive, 0);
+				while($temp = fread($this->archive, 1048576)){
+					bzwrite($fp, $temp);
+				}
+				bzclose($fp);
+				chdir($pwd);
+			} else{
+				$this->error[] = "Could not open {$this->options['name']} for writing.";
+				chdir($pwd);
+				return 0;
+			}
+		} else{
+			$this->archive = bzcompress($this->archive, $this->options['level']);
+		}
+
+		return 1;
+	}
+
+	function open_archive(){
+		return @bzopen($this->options['name'], "rb");
 	}
 }
 
@@ -4192,8 +4529,7 @@ function frame3(){
 			case 71: // compress sel
 				if(strlen($cmd_arg)){
 					ignore_user_abort(true);
-					ini_set("display_errors", 0);
-					ini_set("max_execution_time", 0);
+					set_time_limit(0);
 					$zipfile = false;
 					if(strstr($cmd_arg, ".tar")){
 						$zipfile = new Tar_file(nameToSys($cmd_arg));
