@@ -461,18 +461,18 @@ function view(){
 	} else{
 		html_header();
 		echo "<body marginwidth=\"0\" marginheight=\"0\">";
-		$is_reachable_thru_webserver = (stristr($current_dir, $doc_root) !== false);
-		if($is_reachable_thru_webserver){
-			$url = $url_info["scheme"] . "://" . $url_info["host"];
-			if(isset($url_info["port"]) && strlen($url_info["port"])){
-				$url .= ":" . $url_info["port"];
-			}
-			// Malditas variaveis de sistema!! No windows doc_root é sempre em lowercase... cadê o str_ireplace() ??
-			$url .= str_replace($doc_root, "", "/" . $current_dir) . $filename;
-			$url = str_replace(":/", "://", preg_replace("/[\\/]{2,}/", "/", $url));
-		} else{
+//		$is_reachable_thru_webserver = (stristr($current_dir, $doc_root) !== false);
+//		if($is_reachable_thru_webserver){
+//			$url = $url_info["scheme"] . "://" . $url_info["host"];
+//			if(isset($url_info["port"]) && strlen($url_info["port"])){
+//				$url .= ":" . $url_info["port"];
+//			}
+//			// Malditas variaveis de sistema!! No windows doc_root é sempre em lowercase... cadê o str_ireplace() ??
+//			$url .= str_replace($doc_root, "", "/" . $current_dir) . $filename;
+//			$url = str_replace(":/", "://", preg_replace("/[\\/]{2,}/", "/", $url));
+//		} else{
 			$url = addslashes($path_info["basename"]) . "?action=4&current_dir=" . addslashes($current_dir) . "&filename=" . addslashes($filename) . "&passthru=1";
-		}
+//		}
 		echo "
 	    <script language=\"Javascript\" type=\"text/javascript\">
 	    <!--
